@@ -1,28 +1,28 @@
 package homework1.src;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
-public class TicketProcessor {
+public class TicketProcessorArray {
     public static void main(String[] args) {
-            processTicketsLinkedList();
-    }
+            processTicketsArrayList();
+                }
 
-    public static void processTicketsLinkedList() {
+
+    public static void processTicketsArrayList() {
 
         long totalRunTime = 0; //keep track of total runtime of all trials
         int trials = 10; //# of trials
 
-        for (int i = 0; i<trials; i++) {
+        for (int i = 0; i<trials; i++){
 
-            LinkedList<String> ticketQueue = new LinkedList<>();
+            ArrayList<String> ticketQueue = new ArrayList<>();
 
             // Uncomment the queue length you want to test with
             // createShortQueue(ticketQueue);
             createLongQueue(ticketQueue);
 
             long start = System.nanoTime(); // start testing runtime
-
             while (!ticketQueue.isEmpty()) {
                 // grab the first item in the list
                 String currentTicket = ticketQueue.remove(0);
@@ -32,13 +32,16 @@ public class TicketProcessor {
 
                 //System.out.println("Finished! Remaining in line: " + ticketQueue.size());
                 //System.out.println("---------------------------");
-            }
-            long end = System.nanoTime();
-            //add new runtime to totalRunTime
-            totalRunTime += (end - start);
         }
+            long end = System.nanoTime(); // end testing runtime
+
+            //add new runtime to totalRunTime
+            totalRunTime += (end-start);
+        }
+
         long avgRunTime = (totalRunTime/trials);
         System.out.println("Average run time: " + avgRunTime/ 1000000.0);
+
     }
 
     public static void createShortQueue(List<String> queue) {
