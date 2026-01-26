@@ -8,7 +8,6 @@ public class TicketProcessorArray {
             processTicketsArrayList();
                 }
 
-
     public static void processTicketsArrayList() {
 
         long totalRunTime = 0; //keep track of total runtime of all trials
@@ -24,14 +23,14 @@ public class TicketProcessorArray {
 
             long start = System.nanoTime(); // start testing runtime
             while (!ticketQueue.isEmpty()) {
-                // grab the first item in the list
-                String currentTicket = ticketQueue.remove(0);
+                // grab the last item in the list
+                String currentTicket = ticketQueue.remove(ticketQueue.size()-1);
 
                 // Comment out while benchmarking
-                //System.out.println("Processing: " + currentTicket);
+                // System.out.println("Processing: " + currentTicket);
 
-                //System.out.println("Finished! Remaining in line: " + ticketQueue.size());
-                //System.out.println("---------------------------");
+                // System.out.println("Finished! Remaining in line: " + ticketQueue.size());
+                // System.out.println("---------------------------");
         }
             long end = System.nanoTime(); // end testing runtime
 

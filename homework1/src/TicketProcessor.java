@@ -28,10 +28,10 @@ public class TicketProcessor {
                 String currentTicket = ticketQueue.remove(0);
 
                 // Comment out while benchmarking
-                //System.out.println("Processing: " + currentTicket);
+                // System.out.println("Processing: " + currentTicket);
 
-                //System.out.println("Finished! Remaining in line: " + ticketQueue.size());
-                //System.out.println("---------------------------");
+                // System.out.println("Finished! Remaining in line: " + ticketQueue.size());
+                // System.out.println("---------------------------");
             }
             long end = System.nanoTime();
             //add new runtime to totalRunTime

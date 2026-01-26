@@ -3,6 +3,7 @@ Name: Grace Li
 
 PennKey (e.g., taliem): li63
 
+Statement of work: Stack Overflow, ChatGPT to explain data structure concepts
 
 # Part 1:
 ## Are Alicia and Lloyd both wrong, or perhaps both right? Is only one of them correct? Why?
@@ -54,16 +55,16 @@ Your report should answer the following questions:
 * Which implementation do you suggest should be used? Are there certain situations that might call for the other approach?
 * How does the theoretical time complexity compare with your findings?
 
+I learned that the choice of data structure has significant impact on performance of a ticket processing solution where tickets are constantly removed from a queue as they are processed. One must consider how this processing is implemented. In particular, processes can have very different costs depending on how the underlying data structure is implemented. For example, where the elements are removed from and how often certain operations are repeated can dominate the runtime far more than one-time setup costs like queue creation.
 
-
-
-
-
+I recommend a LinkedList when the tickets need to be processed in a FIFO order. In this case, each removal takes O(1) time making it an efficient data structure to use for large ticket volumes. To implement a LIFO ticket processing order, an ArrayList can be equally efficient since each removal will take O(1) time. For smaller queues, the difference between the two structures is negligent but for larger queues, LinkedList is far more efficient than ArrayList to process tickets in a FIFO manner. My findings align with the theoretical time complexity analysis. Removing elements from the beginning of an ArrayList repeatedly causes all elements to shift to the right each time. In a while loop, that costs O(n^2) processing time. Conversely, removing from the front with LinkedLists takes O(n) time to process in a while loop as expected. Additionally, testing the two different snippets showed that non-algorithmic aspects like printing in a loop can overtake data structure runtime performance and must be controlled when benchmarking. 
 
 # Part 4
 ## What are the Big O and Big Ω times for Javier's algorithm? What are the Big O and Big Ω for space use?
 
+The Big O time is O(nlog(n)) and Big Ω time is also Ω(nlog(n)). This is because no matter what input order, there will be n single-element arrays that are merged at every level. There are O(log(n)) levels of merging and then each element will be processed at every level for the sorting phase O(n) The runtime does not depend on if the input is already sorted or not so the best and worst case scenarios are the same.
 
+The Big O space is O(n) and Big Ω space is also Ω(n). This is because in the best and worst case scenario, a LinkedList of single element arrays will be created whose total number of elements is proportional to n. Additional arrays are created during merging but at any snapshot of time the total amount of extra memory used grows linearly with the size of the input. 
 
 ## Write a paragraph or two in the style of a technical report (think about – how would I write this professionally if I needed to explain my findings to my manager?). 
 Your report should answer the following questions:
