@@ -17,7 +17,7 @@ Big O cannot be determined from the interface type alone, we would need to see h
 
 # Part 2:
 ## What are the Big O and Big Ω times for snippets C and D?
-For snippet C, the loop breaks once the target is found. In this case, Big Ω is Ω(1) given in the best case scenario, target is found in the first cell and you break out of both the inner and outer loop. 
+For snippet C, the loop breaks once the target is found. In this case, Big Ω is Ω(1) given in the best case scenario, the target is found at grid[0][0], so we check one cell then break out of both the inner and outer loop. 
 Big O is O(nm) given in the worst case scenario, the target is in the last cell and the algorithm will look at each cell in the n*m grid.
 
 For snippet D, the loop will continue until the very end of the grid. In this case, Big Ω is Ω(nm) given even in the best case scenario, even though the target is found in the first cell, the loop doesn't break so the algorithm will need to examine every cell of the n*m grid. 
@@ -39,8 +39,8 @@ It is important to look at the overall pattern in the results given exact runtim
 
 # Part 3:
 ## Before you make any changes, explain whether you think a LinkedList or an ArrayList makes more sense in this instance. Which do you think will be faster? Why?
-LinkedList makes more sense because Suho will be constantly processing tickets in a FIFO manner by repeatedly removing the next ticket from the front of the queue.
-Removing the first element in a LinkedList has time complexity of O(1) whereas in an ArrayList, removing at index 0 will have the time complexity of O(n) because all remaining elements will have to shift over to the left. This difference is especially pronounced when the queue is long.
+LinkedList makes more sense because Suho will be constantly processing tickets in a FIFO manner by repeatedly removing the next ticket from the front of the queue. In a LinkedList, removing the first element takes O(1) time because it only requires updating a few pointers.
+In contrast, in an ArrayList, removing at index 0 will have the time complexity of O(n) because all remaining elements will have to shift over to the left. This difference is especially pronounced when the queue is long. Because the code removes tickets from the front of the list until it is empty, this difference in removal cost becomes significant, especially for long queues.
 
 ## When measuring actual runtime, is the LinkedList version Suho wrote, or your ArrayList version faster? Does this change when the list size is small versus when it is very large?
 The LinkedList Suho wrote was faster. For small lists, the difference was minor and the runtime looked similar. For larger lists, however, LinkedList is more obviously faster.
@@ -62,7 +62,7 @@ I recommend a LinkedList when the tickets need to be processed in a FIFO order. 
 # Part 4
 ## What are the Big O and Big Ω times for Javier's algorithm? What are the Big O and Big Ω for space use?
 
-The Big O time is O(nlog(n)) and Big Ω time is also Ω(nlog(n)). This is because no matter what input order, there will be n single-element arrays that are merged at every level. There are O(log(n)) levels of merging and then each element will be processed at every level for the sorting phase O(n) The runtime does not depend on if the input is already sorted or not so the best and worst case scenarios are the same.
+The Big O time is O(nlog(n)) and Big Ω time is also Ω(nlog(n)) for all non-trivial inputs (n>=2). This is because no matter what input order, there will be n single-element arrays that are merged at every level. There are O(log(n)) levels of merging and then each element will be processed at every level for the sorting phase O(n) The runtime does not depend on if the input is already sorted or not so the best and worst case scenarios are the same.
 
 The Big O space is O(n) and Big Ω space is also Ω(n). This is because in the best and worst case scenario, a LinkedList of single element arrays will be created whose total number of elements is proportional to n. Additional arrays are created during merging but at any snapshot of time the total amount of extra memory used grows linearly with the size of the input. 
 
@@ -72,3 +72,6 @@ Your report should answer the following questions:
     * What about in actual runtime?
 * Which implementation do you suggest should be used? Are there certain situations that might call for the other approach?
 
+Both merge sort implementations have the same asymptotic time complexity of O(n log n) and space complexity of O(n). In both cases, the input is divided into smaller sorted subarrays and merged in linear time, resulting in identical theoretical performance from a Big O perspective. Differences in actual runtime arise from implementation details rather than algorithmic complexity. The recursive implementation introduces overhead from function calls and call stack usage, while the iterative implementation avoids recursion but incurs overhead from managing intermediate results and using a LinkedList. These differences affect constant-time costs and can lead to noticeable runtime differences in practice.
+
+In general, the recursive approach is preferable for larger input sizes due to its simpler control flow and more direct use of arrays. However, recursion relies on the call stack, which can become a limitation in memory-constrained environments or for extremely large inputs. In such cases, the iterative implementation may be more appropriate, as it avoids deep recursion, even though it introduces additional overhead from managing a queue of intermediate arrays.
