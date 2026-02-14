@@ -1,8 +1,9 @@
-import java.util.ArrayList;
 
 /**
+ * A unbalanced Binary Search Tree storing items of type T.
+ * Used as the bucket data structure for the hash table.
  *
- * @param <T>
+ * @param <T> the item type (must be Comparable for BST ordering)
  */
 public class MyTree <T extends Comparable<T>> {
     //fields
@@ -49,8 +50,9 @@ public class MyTree <T extends Comparable<T>> {
         MyNode<T> current = this.root;
 
         while (current != null) {
+            int compareItems = item.compareTo(current.getItem());
 
-            if (item.compareTo(current.getItem()) < 0) {
+            if (compareItems < 0) {
                 if (current.getLeft() == null) {
                     current.setLeft(insertNode);
                     insertNode.setParent(current);
@@ -58,7 +60,7 @@ public class MyTree <T extends Comparable<T>> {
                 }
                 current = current.getLeft();
 
-            } else if (item.compareTo(current.getItem()) > 0) {
+            } else if (compareItems > 0) {
                 if (current.getRight() == null) {
                     current.setRight(insertNode);
                     insertNode.setParent(current);
@@ -85,7 +87,7 @@ public class MyTree <T extends Comparable<T>> {
      * @return the MyNode containing the item if found, null if the item is not present
      * @throws IllegalArgumentException if provided item is null
      */
-    public MyNode contains(T item) {
+    public MyNode<T> contains(T item) {
 
         // If item is null, throw IllegalArgumentException
         if (item == null) {
@@ -97,13 +99,14 @@ public class MyTree <T extends Comparable<T>> {
 
         //Traverse the tree until the item is found or a null pointer is reached
         while (current != null) {
+            int compareItems = item.compareTo(current.getItem());
 
             //Compare target item with current node's item, if target smaller, move to left subtree
-            if (item.compareTo(current.getItem()) < 0) {
+            if (compareItems < 0) {
                 current = current.getLeft();
 
                 //Compare target item with current node's item, if target larger, move to right subtree
-            } else if (item.compareTo(current.getItem()) > 0) {
+            } else if (compareItems > 0) {
                 current = current.getRight();
 
                 //If comparison==0 (implicit in else) item has been found
@@ -116,69 +119,177 @@ public class MyTree <T extends Comparable<T>> {
     }
 
     /**
+     * Removes item from this MyTree if it exists.
      *
-     * @param item
-     * @return
+     * Leaf: detach from parent (or clear root).
+     * One child: replace node with its child
+     * Two children: replace node with its in-order successor (leftmost of right subtree)
+     * and rewire pointers to remove the successor from its old position.
+     *
+     * @param item the item to remove
+     * @return true if the item was found and removed; false otherwise
+     * @throws IllegalArgumentException if item is null
      */
     public boolean remove(T item) {
-
+        //if item invalid, throw IllegalArgumentException error
         if (item == null) {
             throw new IllegalArgumentException("Item cannot be null.");
         }
 
+        //Perform a single search to locate node within tree that contains the item
         MyNode<T> current = this.contains(item);
 
+        //If not found, nothing to remove and return false
         if (current == null) {
             return false;
         }
 
 
-        //no children
+        //Case 1: current has no children i.e. Leaf Node
         if(current.getLeft() == null &&  current.getRight() == null){
-            if(current.getParent()  == null){
+            //Identify parent
+            MyNode<T> parent = current.getParent();
+
+            //If parent is null, means current is the root leaf
+            if(parent  == null){
+                //remove root
                 this.root = null;
-            } else if(current.getParent().getLeft() == current){
-                current.getParent().setLeft(null);
+            //If current is left child
+            } else if(parent.getLeft() == current){
+                parent.setLeft(null);
             }
+            //Or else current must be right child
             else {
-                current.getParent().setRight(null);
+                parent.setRight(null);
             }
+
+            //Detach current completely from parent and overall tree
+            current.setParent(null);
+
+            //Since item is removed, return true
             return true;
+
         }
 
-        //one child
+        //Case 2: current has one child
 
+        //Exactly one child left or right so XOR condition
         if(current.getLeft() == null ^ current.getRight() == null){
-            if(current.getParent()  == null){
-                if(current.getRight() != null){
-                    current.setRight(current.getRight());
-                } else {
-                    current.setLeft(current.getLeft());
+
+            //Identify non-null child
+            MyNode<T> child = (current.getLeft() != null) ? current.getLeft() : current.getRight();
+            //Identify parent
+            MyNode<T> parent = current.getParent();
+
+            //If removing root, child becomes new root
+            if(parent  == null){
+                this.root = child;
+                //New root has no parent
+                child.setParent(null);
                 }
-                return true;
-            } else if(current.getParent().getLeft() == current){
-                if(current.getLeft() != null){
-                    current.getParent().setLeft(current.getLeft());
-                    current.setLeft(null);
-                } else{
-                    current.getParent().setRight(current.getRight());
-                    current.setRight(null);
+            //If current is left child of its parent
+            else if(parent.getLeft() == current){
+                //Update parent's left pointer to current's child
+                parent.setLeft(child);
+                //Update child's parent pointer to parent
+                child.setParent(parent);
+
                 }
-            } else if(current.getParent().getRight() == current){
-                if(current.getLeft() != null){
-                    current.getParent().setLeft(current.getLeft());
-                    current.setLeft(null);
-                }  else{
-                    current.getParent().setRight(current.getRight());
-                    current.setRight(null);
+            //Or else current is right child of its parent
+            else {
+                    //Update parent's right pointer to current's child
+                    parent.setRight(child);
+                    //Update child's parent pointer to parent
+                    child.setParent(parent);
                 }
+
+            //Fully detach current
+            current.setParent(null);
+            current.setLeft(null);
+            current.setRight(null);
+
+            //Since item is removed, return true
+            return true;
+
+
             }
+
+        //Case 3: current has two children
+
+        //Current has both left and right children
+        if(current.getRight() != null && current.getLeft() != null){
+
+            //Step 1: Find in-order successor, leftmost of right subtree
+            MyNode<T> succ = current.getRight();
+            //Traverse left until null
+            while(succ.getLeft() != null){
+                succ = succ.getLeft();
+            }
+
+            //Store successor's parent
+            MyNode<T> succParent = succ.getParent();
+
+            //Step 2: Detach successor from original location, take over current's right subtree
+            // Only necessary if successor is NOT direct right child
+            if(succParent != current){
+                //Replace successor in its original parent with successor's right child
+                succParent.setLeft(succ.getRight());
+
+                //If successor had right child, update child's parent pointer
+                if(succ.getRight() != null ){
+                    succ.getRight().setParent(succParent);
+                }
+
+                //Successor now takes over current's right subtree
+                succ.setRight(current.getRight());
+                //Update right subtree's parent pointer
+                current.getRight().setParent(succ);
+
+            }
+
+            //Step 3: Successor takes over current's left subtree
+            succ.setLeft(current.getLeft());
+
+            //Update left subtree's parent pointer
+            current.getLeft().setParent(succ);
+
+
+            //Step 4: Replace current with successor
+            //Identify current's parent
+            MyNode<T> parent = current.getParent();
+
+            //If removing root
+            if (parent == null) {
+                //set new root as successor
+                this.root = succ;
+                //set successor parent as null
+                succ.setParent(null);
+            }
+            //If current was left child
+            else if (parent.getLeft() == current) {
+                //Set successor parent as current's parent
+                succ.setParent(parent);
+                //Set left of parent as successor
+                parent.setLeft(succ);
+            }
+            //If current was right child
+            else{
+                //Set successor parent as current's parent
+                succ.setParent(parent);
+                //Set left of parent as successor
+                parent.setRight(succ);
+            }
+
+            //Fully detach current
+            current.setParent(null);
+            current.setLeft(null);
+            current.setRight(null);
+            //Since item removed, return true
             return true;
         }
 
-
-
-
+        //Should never reach here
+        return false;
     }
 
     /**
@@ -246,7 +357,7 @@ public class MyTree <T extends Comparable<T>> {
      *
      * @return the root node of the tree, or null if the tree is empty
      */
-    public MyNode getRoot() {
+    public MyNode<T> getRoot() {
         // Simply return the root reference.
         // If the tree is empty, root will be null.
         return this.root;
