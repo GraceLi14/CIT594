@@ -122,36 +122,120 @@ public class MyTree <T extends Comparable<T>> {
      */
     public boolean remove(T item) {
 
-
-    }
-
-    public void inOrderTraversal(MyNode<T> node, StringBuilder sb){
-
-        if (node == null) {
-            return;
+        if (item == null) {
+            throw new IllegalArgumentException("Item cannot be null.");
         }
+
+        MyNode<T> current = this.contains(item);
+
+        if (current == null) {
+            return false;
+        }
+
+
+        //no children
+        if(current.getLeft() == null &&  current.getRight() == null){
+            if(current.getParent()  == null){
+                this.root = null;
+            } else if(current.getParent().getLeft() == current){
+                current.getParent().setLeft(null);
+            }
+            else {
+                current.getParent().setRight(null);
+            }
+            return true;
+        }
+
+        //one child
+
+        if(current.getLeft() == null ^ current.getRight() == null){
+            if(current.getParent()  == null){
+                if(current.getRight() != null){
+                    current.setRight(current.getRight());
+                } else {
+                    current.setLeft(current.getLeft());
+                }
+                return true;
+            } else if(current.getParent().getLeft() == current){
+                if(current.getLeft() != null){
+                    current.getParent().setLeft(current.getLeft());
+                    current.setLeft(null);
+                } else{
+                    current.getParent().setRight(current.getRight());
+                    current.setRight(null);
+                }
+            } else if(current.getParent().getRight() == current){
+                if(current.getLeft() != null){
+                    current.getParent().setLeft(current.getLeft());
+                    current.setLeft(null);
+                }  else{
+                    current.getParent().setRight(current.getRight());
+                    current.setRight(null);
+                }
+            }
+            return true;
+        }
+
+
 
 
     }
 
     /**
      *
-     * @return
+     *  Recursively performs an in-order traversal (left, node, right)
+     * and appends each item to the provided StringBuilder in sorted order.
+     * Used internally as a helper for toString().
+     *
+     * @param node the current node being visited
+     * @param sb the StringBuilder accumulating the output
+     */
+    private void inOrderTraversal(MyNode<T> node, StringBuilder sb){
+        //Base case: if current node is null, stop recursion
+        if (node == null) {
+            return;
+        }
+
+        //Recursively traverse left subtree
+        inOrderTraversal(node.getLeft(), sb);
+
+        //Visit current node and append its item and ", "
+        sb.append(node.getItem());
+        sb.append(", ");
+
+        //Recursively traverse right subtree
+        inOrderTraversal(node.getRight(), sb);
+    }
+
+    /**
+     * Returns a string containing the items of the tree using in-order traversal (left, node, right).
+     *
+     * The returned string is formatted as: "item1, item2, item3"
+     *
+     * If the tree is empty, this method returns an empty string.
+     *
+     * @return a comma-separated string of in-order items
      */
     public String toString() {
 
+        //If tree is empty, return empty string
         if (this.root == null) {
             return "";
         }
 
-        MyNode<T> current = this.root;
+        //Initialize a StringBuilder for efficient string construction
+        StringBuilder sb = new StringBuilder();
 
-        ArrayList<T> stringTracker = new ArrayList<>();
-        if (current.getLeft() != null) {
-            current = current.getLeft();
+        //Perform recursive in-order traversal
+        inOrderTraversal( this.root, sb);
 
+        //Remove trailing comma and space
+        if (sb.length() >= 2) {
+            sb.setLength(sb.length() - 2);
         }
 
+        //Return final formatted string
+        return sb.toString();
 
     }
 
