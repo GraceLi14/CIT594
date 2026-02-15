@@ -71,14 +71,14 @@ public class MyHashTable<T extends Comparable<T>>  {
             this.body[key] = new MyTree<>();
         }
 
-        int before = this.body[key].size();
+        int before = this.body[key].getSize();
 
         //Inserts item into bucket BST, if already exists doesn't add a new node
         //Returns  newly created node containing the item, or the existing node if the item is already present
         MyNode<T> insertNode = this.body[key].insert(item);
 
         //Increment size only if new node was added
-        if (body[key].size() > before) {
+        if (body[key].getSize() > before) {
             this.size++;
         }
 
@@ -158,7 +158,7 @@ public class MyHashTable<T extends Comparable<T>>  {
         this.size--;
 
         //If bucket with MyTree (BST) became empty, reset bucket to null
-        if(this.body[key].size() == 0){
+        if (this.body[key].getRoot() == null) {
             this.body[key] = null;
         }
 

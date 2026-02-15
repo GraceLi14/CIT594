@@ -38,7 +38,7 @@ public class MyTree <T extends Comparable<T>> {
      * @return the number of nodes in the tree
      */
 
-    public int size() {
+    public int getSize() {
         return this.size;
     }
 
@@ -318,7 +318,7 @@ public class MyTree <T extends Comparable<T>> {
             else{
                 //Set successor parent as current's parent
                 succ.setParent(parent);
-                //Set left of parent as successor
+                //Set right of parent as successor
                 parent.setRight(succ);
             }
 
