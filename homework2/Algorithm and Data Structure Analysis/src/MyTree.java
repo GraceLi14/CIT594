@@ -1,31 +1,52 @@
 
 /**
- * A unbalanced Binary Search Tree storing items of type T.
+ * An unbalanced Binary Search Tree storing items of type T.
  * Used as the bucket data structure for the hash table.
  *
  * @param <T> the item type (must be Comparable for BST ordering)
  */
 public class MyTree <T extends Comparable<T>> {
-    //fields
 
+    //fields
     private MyNode<T> root;
+    private int size;
 
     //constructor
     public MyTree() {
         this.root = null;
+        this.size = 0;
+    }
+
+    //getters
+
+    /**
+     * Returns the root node of the binary search tree.
+     *
+     * If the tree is empty, this method returns null.
+     *
+     * @return the root node of the tree, or null if the tree is empty
+     */
+    public MyNode<T> getRoot() {
+        // Simply return the root reference.
+        // If the tree is empty, root will be null.
+        return this.root;
+    }
+
+    /**
+     * Returns the number of items currently stored in this tree.
+     *
+     * @return the number of nodes in the tree
+     */
+
+    public int size() {
+        return this.size;
     }
 
     //methods
 
     /**
-     * Inserts the specified item into the binary search tree.
-     * <p>
-     * The tree maintains the BST ordering property:
-     * - All values in the left subtree are less than the parent node.
-     * - All values in the right subtree are greater than the parent node.
-     * <p>
-     * If the item already exists in the tree, no new node is created
-     * and the existing node is returned.
+     * Inserts the specified item into the BST if not already present.
+     * Maintains standard BST ordering rules.
      *
      * @param item the value to insert into the tree
      * @return the newly created node containing the item, or the
@@ -40,39 +61,54 @@ public class MyTree <T extends Comparable<T>> {
             throw new IllegalArgumentException("Item cannot be null.");
         }
 
+        //Create a node with item in it
         MyNode<T> insertNode = new MyNode<>(item);
 
+        //Case 1: Tree is empty so new node becomes root
         if (this.root == null) {
             this.root = insertNode;
+            this.size++;
             return insertNode;
         }
 
+        //Start traversal from root
         MyNode<T> current = this.root;
 
+        //Traverse tree until insertion point or duplicate is found
         while (current != null) {
+            //Compare item to current node's value
             int compareItems = item.compareTo(current.getItem());
 
+            //Case 2: Item is smaller so go left
             if (compareItems < 0) {
+                //If left child is empty, insert there
                 if (current.getLeft() == null) {
-                    current.setLeft(insertNode);
-                    insertNode.setParent(current);
-                    return insertNode;
+                    current.setLeft(insertNode); //Attach as left child
+                    insertNode.setParent(current); //Set parent pointer
+                    this.size++; //Increment tree size
+                    return insertNode; //Return new node
                 }
+                //Otherwise continue traversal to left subtree
                 current = current.getLeft();
 
+            //Case 3: Item is larger so go right
             } else if (compareItems > 0) {
+                //If right child is empty, insert there
                 if (current.getRight() == null) {
-                    current.setRight(insertNode);
-                    insertNode.setParent(current);
-                    return insertNode;
+                    current.setRight(insertNode); //Attach as right child
+                    insertNode.setParent(current); //Set parent pointer
+                    this.size++; //Increment tree size
+                    return insertNode; //Return new node
                 }
+                //Otherwise continue traversl to right subtree
                 current = current.getRight();
 
+            //Case 4; Duplicate item found so no insertion
             } else {
-                return current;
+                return current; //Return existing node without changing size
             }
         }
-        //unreachable in correct logic
+        //Unreachable in correct logic
         return null;
     }
 
@@ -166,6 +202,9 @@ public class MyTree <T extends Comparable<T>> {
             //Detach current completely from parent and overall tree
             current.setParent(null);
 
+            //Decrement size after deletion
+            this.size--;
+
             //Since item is removed, return true
             return true;
 
@@ -207,6 +246,9 @@ public class MyTree <T extends Comparable<T>> {
             current.setParent(null);
             current.setLeft(null);
             current.setRight(null);
+
+            //Decrement size after deletion
+            this.size--;
 
             //Since item is removed, return true
             return true;
@@ -284,6 +326,10 @@ public class MyTree <T extends Comparable<T>> {
             current.setParent(null);
             current.setLeft(null);
             current.setRight(null);
+
+            //Decrement size after deletion
+            this.size--;
+
             //Since item removed, return true
             return true;
         }
@@ -350,16 +396,4 @@ public class MyTree <T extends Comparable<T>> {
 
     }
 
-    /**
-     * Returns the root node of the binary search tree.
-     *
-     * If the tree is empty, this method returns null.
-     *
-     * @return the root node of the tree, or null if the tree is empty
-     */
-    public MyNode<T> getRoot() {
-        // Simply return the root reference.
-        // If the tree is empty, root will be null.
-        return this.root;
-    }
 }

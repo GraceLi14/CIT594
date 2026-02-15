@@ -35,6 +35,16 @@ public class MyHashTable<T extends Comparable<T>>  {
         this.size = 0;
     }
 
+    //getters
+
+    /**
+     * Returns the number of stored items in the hash table
+     * @return The integer count of items stored in the hash table
+     */
+    public int size(){
+        return this.size;
+    }
+
     //methods
 
     /**
@@ -61,14 +71,19 @@ public class MyHashTable<T extends Comparable<T>>  {
             this.body[key] = new MyTree<>();
         }
 
+        int before = this.body[key].size();
+
         //Inserts item into bucket BST, if already exists doesn't add a new node
         //Returns  newly created node containing the item, or the existing node if the item is already present
-        return this.body[key].insert(item);
+        MyNode<T> insertNode = this.body[key].insert(item);
 
         //Increment size only if new node was added
-        if(this.body[key].lastInsertWasNew()){
+        if (body[key].size() > before) {
             this.size++;
         }
+
+        //Returns either new node inserted or existing node
+        return insertNode;
 
     }
 
@@ -103,6 +118,109 @@ public class MyHashTable<T extends Comparable<T>>  {
 
         //Uses contains() from MyTree (BST) to find item stored in BST in the bucket
         return this.body[key].contains(item);
+
+    }
+
+    /**
+     * Removes the specified item from the hash table if present.
+     *
+     * The appropriate bucket is determined using hashCode() and modulo capacity.
+     * If the bucket exists, removal is delegated to the BST stored in that bucket.
+     *
+     * @param item the item to remove
+     * @return true if the item was found and removed; false otherwise
+     * @throws IllegalArgumentException if item is null
+     */
+    public boolean remove(T item) {
+        //Throws IllegalArgumentException if item is null
+        if (item == null) {
+            throw new IllegalArgumentException("Item cannot be null.");
+        }
+
+        //Computes bucket index for item with hashCode and modulo capacity.
+        //Uses bitmask 0x7fffffff to clear sign bit and ensure non-negative value.
+        int key = (item.hashCode() & 0x7fffffff) % this.capacity;
+
+        // If the bucket is empty, the item cannot be present
+        if (this.body[key] == null) {
+            return false;
+        }
+
+        //Attempt to remove item from relevant bucket using MyTree (BST) remove() method
+        boolean removed = this.body[key].remove(item);
+
+        //If removal attempt failed (item not found), return false
+        //To prevent a NullPointerException error
+        if(!removed){
+            return false;
+        }
+        //If removal attempt was successful, decrement size
+        this.size--;
+        //Return removed which equals true given removal was successful
+        return removed;
+    }
+
+    /**
+     * Checks if the hashtable is empty or not i.e. has no elements.
+     * @return true if the hash table contains no items; false otherwise
+     */
+    public boolean isEmpty(){
+        return this.size == 0;
+    }
+
+    /**
+     * Removes all elements from the hash table.
+     *
+     * Each bucket is set to null, effectively removing all BSTs stored in the table.
+     * The overall size counter is reset to zero.
+     */
+    public void clear(){
+        //Iterate through each bucket in the hash table
+        for(int i = 0; i < this.body.length; i++){
+            //For any bucket that contains MyTree (BST), remove the reference
+            if(this.body[i] != null){
+                this.body[i] = null;
+            }
+        }
+
+        //Reset total size of stored elements to zero
+        this.size = 0;
+
+    }
+
+    public static void main(String[] args) {
+        //Create new MyHashTable
+        MyHashTable<String> myHashTable = new MyHashTable<>();
+
+        //Insert various types of Strings and print results
+        System.out.println(myHashTable.add("Grace"));
+        System.out.println(myHashTable.add("Grace"));
+        System.out.println(myHashTable.add("United Explorer!"));
+        System.out.println(myHashTable.add("AaAa"));
+        System.out.println(myHashTable.add("BBAa"));
+        System.out.println(myHashTable.add("AaBB"));
+        System.out.println(myHashTable.add("Wow!"));
+        System.out.println(myHashTable.add("1820395"));
+        System.out.println(myHashTable.add("*&$3abcd"));
+        System.out.println(myHashTable.add("Aa"));
+        System.out.println(myHashTable.add("BB"));
+
+        //Print size()
+        System.out.println("Size: " + myHashTable.size());
+
+        //Print contain() on an existing item
+        System.out.println("Contains Grace: " + myHashTable.contains("Grace"));
+        //Print contain() on a missing item
+        System.out.println("Contains Meep: " + myHashTable.contains("Meep"));
+
+        //Insert an item that already exists and print the result
+        System.out.println("Add duplicate Grace: " + myHashTable.add("Grace"));
+
+        //Remove an item and print the result
+        System.out.println("Remove BBAa: " + myHashTable.remove("BBAa"));
+
+        //Remove the same item again and print the result
+        System.out.println("Remove BBAa again: " + myHashTable.remove("BBAa"));
 
     }
 
