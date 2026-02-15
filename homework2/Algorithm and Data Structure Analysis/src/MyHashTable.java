@@ -156,8 +156,14 @@ public class MyHashTable<T extends Comparable<T>>  {
         }
         //If removal attempt was successful, decrement size
         this.size--;
-        //Return removed which equals true given removal was successful
-        return removed;
+
+        //If bucket with MyTree (BST) became empty, reset bucket to null
+        if(this.body[key].size() == 0){
+            this.body[key] = null;
+        }
+
+        //Return true given removal was successful
+        return true;
     }
 
     /**
