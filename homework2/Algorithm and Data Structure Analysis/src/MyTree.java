@@ -172,11 +172,27 @@ public class MyTree <T extends Comparable<T>> {
             throw new IllegalArgumentException("Item cannot be null.");
         }
 
-        //Perform a single search to locate node within tree that contains the item
-        MyNode<T> current = this.contains(item);
 
-        //If not found, nothing to remove and return false
-        if (current == null) {
+        // Perform a single traversal to locate the node containing the item.
+        // This avoids calling contains(), in compliance with the assignment rule
+        MyNode<T> current = this.root;
+
+        //Traverse tree following BST logic
+        while (current != null) {
+            //Compare target item to current node
+            int cmp = item.compareTo(current.getItem());
+            //If item smaller, move to left subtree
+            if (cmp < 0) current = current.getLeft();
+            //If item larger, move to right subtree
+            else if (cmp > 0) current = current.getRight();
+            //If cmp ==0, found node
+            else {
+                break;
+            }
+        }
+
+        //If traversal reached null, item is not in tree
+        if (current == null){
             return false;
         }
 
