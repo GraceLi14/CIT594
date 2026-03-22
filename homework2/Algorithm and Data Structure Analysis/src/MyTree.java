@@ -412,4 +412,76 @@ public class MyTree <T extends Comparable<T>> {
 
     }
 
+    /**
+     * From the given node and creates new root of subtree from direct right child
+     * @param node that we are rotating on
+     */
+    public void leftRotate(MyNode<T> node){
+        //argument node must not be null
+        if (node == null) {
+            throw new IllegalArgumentException("Node cannot be null.");
+        }
+        //find right node that will replace its place
+        MyNode<T> right = node.getRight();
+
+        //cannot replace with null item
+        if (right == null) {
+            return;
+        }
+
+        //saves old parent
+        MyNode<T> oldParent = node.getParent();
+
+
+
+
+
+
+    }
+
+    /**
+     * From the given node and creates new root of subtree from direct left child
+     * @param node that we are rotating on
+     */
+    public void rightRotate(MyNode<T> node){
+
+        //node cannot be null
+        if (node == null) {
+            throw new IllegalArgumentException("Node cannot be null.");
+        }
+
+        //get left node which it used to replace its place
+        MyNode<T> left = node.getLeft();
+
+        //if left node is null, cannot return
+        if (left == null) {
+            return;
+        }
+
+        //keep original parent for when replace node's parent
+        MyNode<T> oldParent = node.getParent();
+
+        //update node's left subtree
+        node.setLeft(left.getRight());
+        if (left.getRight() != null) {
+            left.getRight().setParent(node);
+        }
+
+        //update left's right subtree
+        left.setRight(node);
+        node.setParent(left);
+
+        if(oldParent == null){
+            this.root = left;
+        } else if(oldParent.getLeft() == node){
+            oldParent.setLeft(left);
+        }  else if(oldParent.getRight() == node){
+            oldParent.setRight(left);
+        }
+        left.setParent(oldParent);
+
+
+
+    }
+
 }
