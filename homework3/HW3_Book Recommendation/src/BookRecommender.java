@@ -1,11 +1,8 @@
-import java.awt.print.Book;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -27,6 +24,72 @@ public class BookRecommender {
 
 
     //methods
+
+    /**
+     * Adds a book node if it doesn't already exist in graph
+     * @param bookID of the book to add
+     */
+    public void addVertex(String bookID) {
+        if (!this.coLikeGraph.containsKey(bookID)) {
+            this.coLikeGraph.put(bookID, new HashMap<String, Integer>());
+        }
+    }
+
+    /**
+     * Removes a book node and removes all references to it from all its neighbors
+     * @param bookID of the book to remove
+     */
+    public void removeVertex(String bookID) {
+        //delete the book (outer key)
+        this.coLikeGraph.remove(bookID);
+
+        //delete any references to the book from neighboring books
+        for(String book : this.coLikeGraph.keySet()) {
+            //grab the hashmap for each outer key book (inner map)
+            Map<String, Integer> neighbors = this.coLikeGraph.get(book);
+            //if any inner key book is the book node to be deleted, remove it from the inner key
+            neighbors.remove(bookID);
+            }
+        }
+
+    /**
+     * Adds undirected edge between two books.
+     * If edge already exists, increment its weight by 1.
+     * If not, create the edge and set starting weight as 1.
+      * @param bookID1 the first book
+     * @param bookID2 the second book
+     */
+    public void addEdge(String bookID1, String bookID2) {
+        //not allow self-edge
+        if (bookID1.equals(bookID2)) {
+            return;
+        }
+        //add book ids as vertex to allow for more robust application of this method
+        addVertex(bookID1);
+        addVertex(bookID2);
+
+        //increment book1->book2
+        //get the neighbors of book 1
+        Map<String, Integer> book1Neighbors = this.coLikeGraph.get(bookID1);
+        //if book 1 already has book 2 as its neighbor, increment the weight by 1
+        if(book1Neighbors.containsKey(bookID2)) {
+            book1Neighbors.put(bookID2, book1Neighbors.get(bookID2) + 1);
+        //if book 2 doesn't exist as a neighbor, make book 2 a neighbor and set weight as 1
+        } else {
+            book1Neighbors.put(bookID2, 1);
+        }
+
+        //increment book2->book1
+        //get the neighbors of book 2
+        Map<String, Integer> book2Neighbors = this.coLikeGraph.get(bookID2);
+        //if book 2 already has book 1 as its neighbor, increment the weight by 1
+        if(book2Neighbors.containsKey(bookID1)) {
+            book2Neighbors.put(bookID1, book2Neighbors.get(bookID1) + 1);
+        //if book 1 doesn't exist as a neighbor, make book 1 a neighbor and set weight as 1
+        } else {
+            book2Neighbors.put(bookID1, 1);
+        }
+    }
 
     /**
      * Reads csv file and converts it into co-like graph.
@@ -86,48 +149,90 @@ public class BookRecommender {
                     }
                 }
             }
-        //if file name wrong or can't be found
+            //if file name wrong or can't be found
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
-        //catch any problem while reading file
+            //catch any problem while reading file
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     /**
-     * Adds a book node if it doesn't already exist in graph
-     * @param book_id of the book to add
+     * Returns the list of top 5 neighbors by highest edge weight of a book.
+     * If the book does not exist in the graph or has no neighbors, method returns "NONE".
+     *
+     * Neighbors sorted by higher edge weight first then alphabetical book ID if weights tie
+     * @param bookID the book you're finding the neighbors of
+     * @return String of top 5 neighbors by edge weight separated by commas or "NONE" if no valid recommendations
      */
-    public void addVertex(String book_id) {
-        if (!this.coLikeGraph.containsKey(book_id)) {
-            this.coLikeGraph.put(book_id, new HashMap<String, Integer>());
+    public String nearestNeighbors(String bookID){
+        //if bookID doesn't exist or has no neighbors, return string "NONE"
+        if(!this.coLikeGraph.containsKey(bookID) || this.coLikeGraph.get(bookID).isEmpty()) {
+            return "NONE";
         }
-    }
 
-    /**
-     * Removes a book node and removes all references to it from all its neighbors
-     * @param book_id of the book to remove
-     */
-    public void removeVertex(String book_id) {
-        //delete the book (outer key)
-        this.coLikeGraph.remove(book_id);
+        //convert neighbor map into list of entries to be sorted
+        List<Map.Entry<String, Integer>> neighbors = new ArrayList<Map.Entry<String, Integer>>(this.coLikeGraph.get(bookID).entrySet());
 
-        //delete any references to the book from neighboring books
-        for(String book : this.coLikeGraph.keySet()) {
-            //grab the hashmap for each outer key book (inner map)
-            Map<String, Integer> neighbors = this.coLikeGraph.get(book);
-            //if any inner key book is the book node to be deleted, remove it from the inner key
-            neighbors.remove(book_id);
+        //use Collections.sort method to sort neighbors by descending edge weight, then alphabetically by book ID
+        Collections.sort(neighbors, new Comparator<Map.Entry<String, Integer>>() {
+            @Override
+            public int compare(Map.Entry<String, Integer> i, Map.Entry<String, Integer> j) {
+                //compare the book weights and sort by descending order
+                if(!i.getValue().equals(j.getValue())) {
+                    return j.getValue().compareTo(i.getValue());
+                }
+                //if the values are equal, sort alphabetically by bookID
+                return i.getKey().compareTo(j.getKey());
+
+            }
+
+        });
+
+        //placeholder for top results to be converted to a string
+        String topResults = "";
+        //must return up to 5 results
+        int limit = Math.min(neighbors.size(), 5);
+
+        //building the string of neighboring books separated by comma
+        for(int entry = 0; entry < limit; entry++) {
+            topResults += neighbors.get(entry).getKey();
+            //unless entry is the last item, add a comma after it in the string
+            if(entry != limit-1) {
+                topResults += ",";
             }
         }
+        //return the final string
+        return topResults;
+        }
 
-    public void addEdge(String book_id1, String book_id2) {
+    /**
+     *
+      * @param userID
+     * @return
+     */
+    public String likeHistorynearestNeighbors(String[] likedBooks){
+        for(String bookID : likedBooks) {
+            if(!this.coLikeGraph.containsKey(bookID) || this.coLikeGraph.get(bookID).isEmpty()) {
+                return "NONE";
+            }
+
+        }
+        //for each book, get the inner map
+        //create another hashmap where you iterate through each book's neighbors and
+        // either add them to the new hashmap if it doesnt exist with the value being the weight
+        // OR add new weight to existing bookid
+        return "None";
+    }
 
     }
+
+
     //main method
     public static void main(String[] args) {
+
     }
-    }
+
 
 
