@@ -208,25 +208,98 @@ public class BookRecommender {
         }
 
     /**
+     * Returns up to 5 books based on cumulative neighbor
+     * weights of the books in the user's like history
      *
-      * @param userID
-     * @return
+     * Books already in input history are excluded.
+     * If there are no valid recommendations, return "NONE".
+     *
+      * @param likedBooks the books in user's like history
+     * @return String up to 5 recommended bookIDs or "NONE" if no valid recommendations exist
      */
     public String likeHistorynearestNeighbors(String[] likedBooks){
-        for(String bookID : likedBooks) {
-            if(!this.coLikeGraph.containsKey(bookID) || this.coLikeGraph.get(bookID).isEmpty()) {
-                return "NONE";
-            }
+        //if given an empty list, return string "NONE"
+        if(likedBooks.length == 0) return "NONE";
 
+        // Store input books in a set so they can be excluded from recommendations
+        Set<String> inputBooks = new HashSet<String>();
+        for (String bookID : likedBooks) {
+            inputBooks.add(bookID);
         }
-        //for each book, get the inner map
-        //create another hashmap where you iterate through each book's neighbors and
-        // either add them to the new hashmap if it doesnt exist with the value being the weight
-        // OR add new weight to existing bookid
-        return "None";
-    }
+
+        //to aggregate all liked books' neighboring books and their weights
+        Map<String, Integer> allBooksNeighbors = new HashMap<>();
+
+        //loop through all books liked historically
+        for(String bookID : likedBooks) {
+            //if book doesn't exist in coLikeGraph or has no neighbors, skip
+            if (!this.coLikeGraph.containsKey(bookID) || this.coLikeGraph.get(bookID).isEmpty()) {
+                continue;
+            }
+            //get inner map of neighboring books and edge weights
+            Map<String, Integer> bookNeighbors = this.coLikeGraph.get(bookID);
+
+            //loop through all neighboring books
+            for (String book : bookNeighbors.keySet()) {
+                //skip books already in like history
+                if(inputBooks.contains(book)){
+                    continue;
+                }
+                //if neighboring book doesn't currently exist in the aggregate map, add it and its edge weight to the map
+                if (!allBooksNeighbors.containsKey(book)) {
+                    allBooksNeighbors.put(book, bookNeighbors.get(book));
+                    //if it already exists, add its edge weight to the existing edge weight in the aggregate map
+                } else {
+                    allBooksNeighbors.put(book, allBooksNeighbors.get(book) + bookNeighbors.get(book));
+                }
+
+            }
+        }
+
+        // If there are no valid recommendations, return "NONE"
+        if (allBooksNeighbors.isEmpty()) {
+            return "NONE";
+        }
+
+        //convert into a sortable list
+        List<Map.Entry<String, Integer>> aggregateHistoryNeighbors = new ArrayList<Map.Entry<String, Integer>>(allBooksNeighbors.entrySet());
+
+
+        //use Collections.sort method to sort neighbors by descending edge weight, then alphabetically by book ID
+        Collections.sort(aggregateHistoryNeighbors, new Comparator<Map.Entry<String, Integer>>() {
+            @Override
+            public int compare(Map.Entry<String, Integer> i, Map.Entry<String, Integer> j) {
+                //compare the book weights and sort by descending order
+                if(!i.getValue().equals(j.getValue())) {
+                    return j.getValue().compareTo(i.getValue());
+                }
+                //if the values are equal, sort alphabetically by bookID
+                return i.getKey().compareTo(j.getKey());
+
+            }
+        });
+
+        //placeholder for top results to be converted to a string
+        String topResults = "";
+        //must return up to 5 results
+        int limit = Math.min(aggregateHistoryNeighbors.size(), 5);
+
+        //building the string of neighboring books separated by comma
+        for(int entry = 0; entry < limit; entry++) {
+            topResults += aggregateHistoryNeighbors.get(entry).getKey();
+            //unless entry is the last item, add a comma after it in the string
+            if(entry != limit-1) {
+                topResults += ",";
+            }
+        }
+        //return the final string
+        return topResults;
+      }
+
 
     }
+
+
 
 
     //main method
