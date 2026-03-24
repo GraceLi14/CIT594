@@ -217,7 +217,7 @@ public class BookRecommender {
       * @param likedBooks the books in user's like history
      * @return String up to 5 recommended bookIDs or "NONE" if no valid recommendations exist
      */
-    public String likeHistorynearestNeighbors(String[] likedBooks){
+    public String likeHistoryNearestNeighbors(String[] likedBooks){
         //if given an empty list, return string "NONE"
         if(likedBooks.length == 0) return "NONE";
 
@@ -265,7 +265,7 @@ public class BookRecommender {
         List<Map.Entry<String, Integer>> aggregateHistoryNeighbors = new ArrayList<Map.Entry<String, Integer>>(allBooksNeighbors.entrySet());
 
 
-        //use Collections.sort method to sort neighbors by descending edge weight, then alphabetically by book ID
+        //use Collections.sort method to sort neighbors by descending cumulative edge weight, then alphabetically by book ID
         Collections.sort(aggregateHistoryNeighbors, new Comparator<Map.Entry<String, Integer>>() {
             @Override
             public int compare(Map.Entry<String, Integer> i, Map.Entry<String, Integer> j) {
