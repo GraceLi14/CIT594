@@ -512,42 +512,54 @@ public class BookRecommender {
     }
 
     /**
-     *
-     * @param sourceBookID
-     * @param targetBookID
-     * @return
+     * Find the shortest path between two books in the filtered co-like graph.
+     * @param sourceBookID the starting book ID
+     * @param targetBookID the ending book ID
+     * @return the shortest path joined by "->" or "NONE" if no path exists
      */
     public String genreHopper(String sourceBookID, String targetBookID) {
+        //store each undirected edge weight once
         ArrayList<Integer> edgeWeights = new ArrayList<>();
+        //collect edge weight from co-like graph
         for (String bookID : this.coLikeGraph.keySet()) {
             Map<String, Integer> bookNeighbors = this.coLikeGraph.get(bookID);
+
             for (String book : bookNeighbors.keySet()) {
+                //only count one direction of each undirected edge
                 if (bookID.compareTo(book) < 0) {
                     edgeWeights.add(bookNeighbors.get(book));
                 }
             }
         }
 
+        //if there are no edges, no paths can exist
         if (edgeWeights.isEmpty()) {
             return "NONE";
         }
 
+        //sort edge weights and find median
         edgeWeights.sort(Comparator.naturalOrder());
-
         int medianWeight = edgeWeights.get(edgeWeights.size() / 2);
 
+        //build filtered graph using only edges with weight greater than or equal to median
         HashMap<String, Set<String>> filteredBookToBooks = new HashMap<>();
 
+        //iterate through all keys in coLikeGraph
         for (String bookID : this.coLikeGraph.keySet()) {
             Map<String, Integer> bookNeighbors = this.coLikeGraph.get(bookID);
+            //ensure current book exists in filtered graph
             if(!filteredBookToBooks.containsKey(bookID)) {
                 filteredBookToBooks.put(bookID, new HashSet<>());
             }
+
             for (String book : bookNeighbors.keySet()) {
+                //keep only edges that meet median threshold
                 if (bookNeighbors.get(book) >= medianWeight) {
+                    //ensure neighbor book exists in filtered graph
                     if(!filteredBookToBooks.containsKey(book)) {
                         filteredBookToBooks.put(book, new HashSet<>());
                     }
+                    //add undirected edge to filtered graph
                     filteredBookToBooks.get(bookID).add(book);
                     filteredBookToBooks.get(book).add(bookID);
                 }
@@ -555,6 +567,7 @@ public class BookRecommender {
 
         }
 
+        //if source or target book is missing from filtered graph, no path exists
         if (!filteredBookToBooks.containsKey(sourceBookID) || !filteredBookToBooks.containsKey(targetBookID)) {
             return "NONE";
         }
@@ -566,27 +579,50 @@ public class BookRecommender {
         //queue to enable BFS
         Deque<String> queue = new ArrayDeque<>();
 
-
+        //if source and target are same, return single book
         if(sourceBookID.equals(targetBookID)) {
             return sourceBookID;
         }
+
+        //BFS traversal starts from source book
         visited.add(sourceBookID);
         queue.offer(sourceBookID);
 
+        //perform BFS on filtered graph
         while(!queue.isEmpty()) {
             String currentBook = queue.poll();
 
             for (String neighbor : filteredBookToBooks.get(currentBook)) {
-                previous.put(neighbor, currentBook);
-                visited.add(neighbor);
-                queue.offer(neighbor);
-                    }
-
+                //only visit unvisited neighbors
+                if(!visited.contains(neighbor)) {
+                    previous.put(neighbor, currentBook);
+                    visited.add(neighbor);
+                    queue.offer(neighbor);
                 }
 
-        return "NONE";
-
             }
+
+        }
+
+        //if target was never reached, no path exists
+        if(!visited.contains(targetBookID)) {
+            return "NONE";
+        }
+
+        //build the path to target
+        String currentBook = previous.get(targetBookID);
+        StringBuilder pathToTarget = new StringBuilder(targetBookID);
+        while(!currentBook.equals(sourceBookID)){
+            pathToTarget.insert(0,currentBook + "->");
+            currentBook = previous.get(currentBook);
+        }
+
+        //add source book to front of the path string
+        pathToTarget.insert(0,sourceBookID + "->");
+        //return final path string
+        return pathToTarget.toString();
+
+    }
     //main method
     public static void main(String[] args) {
 
