@@ -511,12 +511,92 @@ public class BookRecommender {
         return topCandidateBooks;
     }
 
+    /**
+     *
+     * @param sourceBookID
+     * @param targetBookID
+     * @return
+     */
+    public String genreHopper(String sourceBookID, String targetBookID) {
+        ArrayList<Integer> edgeWeights = new ArrayList<>();
+        for (String bookID : this.coLikeGraph.keySet()) {
+            Map<String, Integer> bookNeighbors = this.coLikeGraph.get(bookID);
+            for (String book : bookNeighbors.keySet()) {
+                if (bookID.compareTo(book) < 0) {
+                    edgeWeights.add(bookNeighbors.get(book));
+                }
+            }
+        }
 
+        if (edgeWeights.isEmpty()) {
+            return "NONE";
+        }
+
+        edgeWeights.sort(Comparator.naturalOrder());
+
+        int medianWeight = edgeWeights.get(edgeWeights.size() / 2);
+
+        HashMap<String, Set<String>> filteredBookToBooks = new HashMap<>();
+
+        for (String bookID : this.coLikeGraph.keySet()) {
+            Map<String, Integer> bookNeighbors = this.coLikeGraph.get(bookID);
+            if(!filteredBookToBooks.containsKey(bookID)) {
+                filteredBookToBooks.put(bookID, new HashSet<>());
+            }
+            for (String book : bookNeighbors.keySet()) {
+                if (bookNeighbors.get(book) >= medianWeight) {
+                    if(!filteredBookToBooks.containsKey(book)) {
+                        filteredBookToBooks.put(book, new HashSet<>());
+                    }
+                    filteredBookToBooks.get(bookID).add(book);
+                    filteredBookToBooks.get(book).add(bookID);
+                }
+            }
+
+        }
+
+        if (!filteredBookToBooks.containsKey(sourceBookID) || !filteredBookToBooks.containsKey(targetBookID)) {
+            return "NONE";
+        }
+
+        //tracks which books are already visited
+        Set<String> visited = new HashSet<>();
+        //tracks for each book, where it came from
+        Map<String,String> previous =  new HashMap<>();
+        //queue to enable BFS
+        Deque<String> queue = new ArrayDeque<>();
+
+
+        if(sourceBookID.equals(targetBookID)) {
+            return sourceBookID;
+        }
+        visited.add(sourceBookID);
+        queue.offer(sourceBookID);
+
+        while(!queue.isEmpty()) {
+            String currentBook = queue.poll();
+
+            for (String neighbor : filteredBookToBooks.get(currentBook)) {
+                previous.put(neighbor, currentBook);
+                visited.add(neighbor);
+                queue.offer(neighbor);
+                    }
+
+                }
+
+        return "NONE";
+
+            }
     //main method
     public static void main(String[] args) {
 
     }
-}
+        }
+
+
+
+
+
 
 
 
