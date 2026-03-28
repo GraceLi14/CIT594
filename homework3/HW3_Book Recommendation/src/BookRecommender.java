@@ -7,7 +7,7 @@ import java.util.*;
 
 /**
  * BookRecommender builds graph-based recommendation systems from a CSV file of user to book likes.
- * Graphs used include an adjacency-lists for the co-like graph
+ * Graphs used include an adjacency-list for the co-like graph
  * and a bipartite graph representation for user-book relationships
  *
  * It includes:
@@ -602,14 +602,17 @@ public class BookRecommender {
         while(!queue.isEmpty()) {
             String currentBook = queue.poll();
 
-            for (String neighbor : filteredBookToBooks.get(currentBook)) {
-                //only visit unvisited neighbors
-                if(!visited.contains(neighbor)) {
+            List<String> neighbors = new ArrayList<>(filteredBookToBooks.get(currentBook));
+            //sort BFS neighbors alphabetically for tie-breaking purposes
+            Collections.sort(neighbors);
+
+            for (String neighbor : neighbors) {
+                // only visit unvisited neighbors
+                if (!visited.contains(neighbor)) {
                     previous.put(neighbor, currentBook);
                     visited.add(neighbor);
                     queue.offer(neighbor);
                 }
-
             }
 
         }
