@@ -6,7 +6,17 @@ import java.util.*;
 
 
 /**
+ * BookRecommender builds graph-based recommendation systems from a CSV file of user to book likes.
+ * Graphs used include an adjacency-lists for the co-like graph
+ * and a bipartite graph representation for user-book relationships
  *
+ * It includes:
+ * 1. book to nearest neighbor recommendations
+ * 2. like-history nearest neighbor recommendations
+ * 3. user-based collaborative filtering with Jaccard similarity and B score
+ * 4. genre hopper recommendation with most short path search in a filtered co-like graph
+ *
+ * The CSV format per line is: User_ID, Book_ID
  */
 public class BookRecommender {
 
@@ -625,6 +635,53 @@ public class BookRecommender {
     }
     //main method
     public static void main(String[] args) {
+
+        // Need at least a file name, command, and one target argument
+        if (args.length < 3) {
+            System.out.println("NONE");
+            return;
+        }
+
+        String fileName = args[0];
+        String command = args[1];
+
+        BookRecommender recommender = new BookRecommender();
+
+        if (command.equals("single_book_mn")) {
+            recommender.buildCoLikeGraph(fileName);
+            System.out.println(recommender.nearestNeighbors(args[2]));
+            return;
+        }
+
+        if (command.equals("like_history_mn")) {
+            recommender.buildCoLikeGraph(fileName);
+            String[] likedBooks = Arrays.copyOfRange(args, 2, args.length);
+            System.out.println(recommender.likeHistoryNearestNeighbors(likedBooks));
+            return;
+        }
+
+        if (command.equals("user_cf")) {
+            if (args.length < 3) {
+                System.out.println("NONE");
+                return;
+            }
+            recommender.buildUserBasedGraph(fileName);
+            System.out.println(recommender.tasteTwins(args[2]));
+            return;
+        }
+
+        if (command.equals("shortest_path")) {
+            if (args.length < 4) {
+                System.out.println("NONE");
+                return;
+            }
+            recommender.buildCoLikeGraph(fileName);
+            System.out.println(recommender.genreHopper(args[2], args[3]));
+            return;
+        }
+
+        // If command is invalid, print NONE
+        System.out.println("NONE");
 
     }
         }
