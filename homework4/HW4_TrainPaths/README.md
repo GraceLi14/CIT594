@@ -6,9 +6,9 @@ Part 4 Analysis
 
 2. Why does A* require a priority queue (or min-heap)? What would happen if it used a regular queue instead? 
 
-4. When translating your solution from Java to Python, how did your chosen data structures change? Give a specific example of a data structure you used in Java and its equivalent in Python.
+3. When translating your solution from Java to Python, how did your chosen data structures change? Give a specific example of a data structure you used in Java and its equivalent in Python.
 
-
+Additional Questions
 1. How long did it take you to complete this assignment (in hours)? 
 
 2. What parts of this assignment did you find most difficult? 
@@ -17,3 +17,5 @@ Part 4 Analysis
 Stack Overflow for Haversine formula.
 
 4. Please write one or two sentences about something that you learned while completing this assignment.
+Not take pseudocode for face-value. 
+Figuring out how the different components fit into each other. For example, the pseudocode for A* algorithm has more parameters than what I needed to implement because I already had a lot of the parameters hidden as fields in my class.

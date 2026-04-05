@@ -2,8 +2,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  *
@@ -191,6 +190,195 @@ public class PathFinder {
         return earthRadius * c;
     }
 
+    /**
+     * Run A* algorithm to find shortest path from start station to target station
+     * @param startStationID start station ID
+     * @param targetStationID target station ID
+     * @return "NONE" if there are no valid paths or two-line string:
+     * line 1 = String of shortest path of stop_ids strung together by arrows
+     * line 2 = total path distance rounded to 2 decimals
+     */
+    public String aStar(String startStationID, String targetStationID) {
+        //maps each station to the distance from start
+        HashMap<String, Double> distance = new HashMap<>();
+        //maps each station its total cost which is distance + heuristic
+        HashMap<String, Double> estimate = new HashMap<>();
+        //maps each station to previous station on the best known path
+        HashMap<String, String> predecessor = new HashMap<>();
+
+        //initialize all stations with infinite distance/estimate and no predecessor
+        for (String stationID : this.stations.keySet()) {
+            distance.put(stationID, Double.POSITIVE_INFINITY);
+            estimate.put(stationID, Double.POSITIVE_INFINITY);
+            predecessor.put(stationID, null);
+        }
+
+        //if either start or target station doesn't exist in the stations graph, print "NONE" and return
+        if (!this.stations.containsKey(startStationID) || !this.stations.containsKey(targetStationID)) {
+            return "NONE";
+        }
+
+        //if start and target stations are the same, print just the station with distance of 0
+        if(startStationID.equals(targetStationID)) {
+            return startStationID + "\n0.00";
+        }
+
+        //distance from start station to itself is 0
+        distance.put(startStationID, 0.0);
+
+        //look up station object for start station
+        Station startStation = this.stations.get(startStationID);
+        //look up station object for target station
+        Station targetStation = this.stations.get(targetStationID);
+
+        //calculate heuristic from start station directly to target station
+        double haversineSourceTarget = haversine(
+                startStation.latitude, startStation.longitude,
+                targetStation.latitude, targetStation.longitude
+        );
+
+        //set the start station's estimated total cost
+        estimate.put(startStationID, haversineSourceTarget);
+        //keep track of stations fully prcoessed
+        Set<String> visited = new HashSet<>();
+
+        //min-heap ordered by smallest estimated total cost, then alphbetical station ID
+        PriorityQueue<String> toVisit = new PriorityQueue<>(
+                //if station a has smaller estimate, it should come first
+                (a,b) -> {
+                    if (estimate.get(a) < (estimate.get(b))) {
+                        return -1;
+                    //if station b has smaller estimate, a should come later
+                    } else if (estimate.get(a) > (estimate.get(b))) {
+                        return 1;
+                    //if it's a tie, break tie alphabetically by station ID
+                    } else {
+                        return a.compareTo(b);
+                    }
+                }
+        );
+
+        //add all stations to priority queue
+        for (String stationID : this.stations.keySet()) {
+            toVisit.offer(stationID);
+        }
+
+        //continue until there's no more stations to process
+        while (!toVisit.isEmpty()) {
+            //remove station with the smallest estimate
+            String currentStationID = toVisit.poll();
+
+            //skip this station if already visited/processed
+            if(visited.contains(currentStationID)) {
+                continue;
+            }
+
+            //if best remaining estimate is infinity, no reachable path exists to target
+            if(estimate.get(currentStationID) == Double.POSITIVE_INFINITY) {
+                break;
+            }
+
+            //if target is reached, stop search
+            if(currentStationID.equals(targetStationID)) {
+                break;
+            }
+
+            //mark current station as processed
+            visited.add(currentStationID);
+
+            //if current station has no neighbors in graph, skip it
+            if (!this.graph.containsKey(currentStationID)) {
+                continue;
+            }
+
+            //get all neighboring station IDs of current station
+            Set<String> neighbors = this.graph.get(currentStationID).keySet();
+
+            //try relaxing edge to each neighbor
+            for(String neighborID : neighbors) {
+                //skip neighbors that are fully processed
+                if(visited.contains(neighborID)) {
+                    continue;
+                }
+                //save neighbor's old estimate so we can see if there's improvement
+                double oldEstimate = estimate.get(neighborID);
+                //attempt to improve path to this neighbor
+                relaxAStar(currentStationID, neighborID, targetStationID, distance, estimate, predecessor);
+
+                //if neighbor's estimate improved, reinsert ot heap
+                if(oldEstimate > estimate.get(neighborID)){
+                    toVisit.offer(neighborID);
+                }
+            }
+
+            }
+        //if target has no predecessor, no path from start to target was found so print "NONE"
+        if (predecessor.get(targetStationID) == null) {
+            return "NONE";
+        }
+
+        //build the path to target
+        String currentNode = targetStationID;
+        //stores final path in reverse-building order
+        StringBuilder pathToTarget = new StringBuilder();
+
+        //follow predecessor links backward until start is passed
+        while(currentNode != null) {
+            //if this is first station to be added, add without arrows
+            if (pathToTarget.isEmpty()) {
+                pathToTarget.insert(0,currentNode);
+            //otherwise, add with arrows
+            } else {
+                pathToTarget.insert(0, currentNode + "->");
+            }
+
+            //move backward to get previous station on the path
+            currentNode = predecessor.get(currentNode);
+        }
+
+        //convert completed path into string
+        String pathString = pathToTarget.toString();
+        //return path on line 1 and final total distance on line 2
+        return pathString + "\n" + String.format("%.2f", distance.get(targetStationID));
+        }
+
+    /**
+     * Going from start node to nodeVisited through nodeCurrent gives a shorter path than the currently known one.
+     * This method updates distance, estimate and predecessor.
+     * @param nodeCurrent current station being explored
+     * @param nodeVisited neighboring station of nodeCurrent
+     * @param targetStationID destination station ID
+     * @param distance maps each station to its current best known distance from the source
+     * @param estimate maps each station to its current estimated total cost
+     * @param predecessor maps each station to the previous station on the best known path
+     */
+    public void relaxAStar(String nodeCurrent,
+                           String nodeVisited,
+                           String targetStationID,
+                           HashMap<String, Double> distance,
+                           HashMap<String, Double> estimate,
+                           HashMap<String, String> predecessor) {
+        //look up Station object for neighbor being checked
+        Station visitedStation = this.stations.get(nodeVisited);
+        //look up Station object for target station
+        Station targetStation = this.stations.get(targetStationID);
+        //get weight of edge between nodeCurrent and nodeVisited
+        double weight = this.graph.get(nodeCurrent).get(nodeVisited);
+
+        //if going through nodeCurrent is shorter than to nodeVisited, update path information for nodeVisited
+        if(distance.get(nodeVisited) > distance.get(nodeCurrent) + weight) {
+            //update the shortest known distance to nodeVisited
+            distance.put(nodeVisited, distance.get(nodeCurrent) + weight);
+            //update the estimated total cost which is actual distance from source to nodeVisited + heuristic distance from nodeVisited to targetStation
+            estimate.put(nodeVisited, distance.get(nodeVisited) +
+                    haversine(visitedStation.latitude, visitedStation.longitude, targetStation.latitude, targetStation.longitude));
+            //record best path to nodeVisited comes through nodeCurrent
+            predecessor.put(nodeVisited, nodeCurrent);
+        }
+
+    }
+
+    }
 
 
-}
+
