@@ -5,7 +5,10 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- *
+ * Builds a weighted graph of SEPTA stations and uses A* search
+ * to find the shortest path between two stations.
+ * Stations are loaded from septa_nodes.csv, edges are loaded from septa_edges.csv,
+ * and edge weights are computed using Haversine distance in kilometers.
  */
 public class PathFinder {
     //fields
@@ -375,6 +378,38 @@ public class PathFinder {
             //record best path to nodeVisited comes through nodeCurrent
             predecessor.put(nodeVisited, nodeCurrent);
         }
+
+    }
+    //main method
+    public static void main(String[] args) {
+        //need septa_nodes, septa_edges, command line, source_id, target_id as arguments
+        //if missing any of the 5 arguments, print "NONE"
+        if(args.length != 5) {
+            System.out.println("NONE");
+            return;
+        }
+
+        //assign components of the args to their respective variables
+        String nodesFile = args[0];
+        String edgesFile = args[1];
+        String command = args[2];
+        String source_id = args[3];
+        String target_id = args[4];
+
+        //if command is not astar, not a valid command so print "NONE"
+        if (!command.equals("astar")) {
+            System.out.println("NONE");
+            return;
+        }
+
+        //initialize PathFinder
+        PathFinder finder = new PathFinder();
+        //load files
+        finder.loadStations(nodesFile);
+        finder.loadEdges(edgesFile);
+
+        //print shortest path and length of that path in km from source_id to target_id
+        System.out.println(finder.aStar(source_id, target_id));
 
     }
 

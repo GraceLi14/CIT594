@@ -15,6 +15,7 @@ Additional Questions
 
 3. Did you use any outside resources to complete this assignment (worked with a friend, stack overflow, ChatGPT, etc.)? If so, what resources and in what way did you use them? 
 Stack Overflow for Haversine formula.
+GPT to help me understand how Java min-heap updates i.e. doesn't resort heap when I update a node's estimate map so I need to reinsert node into heap.
 
 4. Please write one or two sentences about something that you learned while completing this assignment.
 Not take pseudocode for face-value. 
