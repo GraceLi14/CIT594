@@ -186,6 +186,43 @@ class PathFinder:
         #distance from start station to itself is 0
         distance[startStationID] = 0.0
 
+        #get both start and target station
+        startStation = self.stations[startStationID]
+        targetStation = self.stations[targetStationID]
+
+        haversineSourceTarget = self.haversine(startStation.lat, startStation.lon, targetStation.lat, targetStation.lon)
+
+        estimate[startStationID] = haversineSourceTarget
+        visited = set()
+
+    def relaxAStar(self, nodeCurrent, nodeVisited, targetStationID, distance, estimate, predecessor):
+        '''
+        Going from start node to nodeVisited through nodeCurrent gives a shorter path than the currently known one.
+        This method updates distance, estimate and predecessor.
+        :param nodeCurrent: current station being explored
+        :param nodeVisited: neighboring station of nodeCurrent
+        :param targetStationID: destination station ID
+        :param distance: maps each station to its current best known distance from the source
+        :param estimate: maps each station to its current estimated total cost
+        :param predecessor: maps each station to the previous station on the best known path
+        '''
+        #station object for neighbor of current station
+        visitedStation = self.stations[nodeVisited]
+        #station object for target station
+        targetStation = self.stations[targetStationID]
+        #get weight of edge between nodeCurrent and nodeVisited
+        weight = self.graph[nodeCurrent][nodeVisited]
+
+        #if going through nodeCurrent is shorter than to nodeVisited, update path information for nodeVisited
+        if(distance[nodeVisited] > distance[nodeCurrent] + weight):
+            #update shortest known distance to nodeVisited
+            distance[nodeVisited] = distance[nodeCurrent] + weight
+            #update estimated total cost which is actual distance from source to nodeVisited + heuristic distance from nodeVisited to targetStation
+            estimate[nodeVisited] = distance[nodeVisited] + self.haversine(visitedStation.lat, visitedStation.lon, targetStation.lat, targetStation.lon)
+            #record best path to nodeVisited comes through nodeCurrent
+            predecessor[nodeVisited] = nodeCurrent
+
+
 
 
 
