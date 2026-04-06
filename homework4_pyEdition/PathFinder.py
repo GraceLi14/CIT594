@@ -133,11 +133,14 @@ class PathFinder:
         :return: Haversine distance in kilometers
         '''
 
+        #radius of earth in km
         earthRadius = 6371
 
+        #convert differences in latitude and longitude from degrees to radians
         dLat = math.radians(latB - latA)
         dLon = math.radians(lonB - lonA)
 
+        #convert original latitudes from degrees to radians
         lat1Rad = math.radians(latA)
         lat2Rad = math.radians(latB)
 
@@ -151,22 +154,38 @@ class PathFinder:
         return earthRadius * c
 
     def aStar(self, startStationID, targetStationID):
+        """
+        Run A* algorithm to find the shortest path from startStationID to targetStationID
+        :param startStationID: start station ID
+        :param targetStationID: target station ID
+        :return: "NONE" if no valid paths OR return two-line string:
+        line 1 = String of shortest path of stop_ids strung together by arrows
+        line 2 = total path distance rounded to 2 decimal places
+        """
+        #stores map of each station to the distance from start
         distance = {}
+        #stores each station's total cost which is distance + heuristic
         estimate = {}
+        #maps each station to previous station in best known path
         predecessor = {}
 
+        #initialize all stations with infinite distance and estimate and no predecessor
         for station in self.stations.keys():
             distance[station] = math.inf
             estimate[station] = math.inf
             predecessor[station] = None
 
+        #if startStationID or targetStationID not in stations map, print "NONE" and return
         if startStationID not in self.stations or targetStationID not in self.stations:
             return "NONE"
 
+        #if start and target station are the same, print just the station with distance of 0
         if(startStationID == targetStationID):
-            return startStationID + "\n 0.00";
+            return startStationID + "\n 0.00"
 
+        #distance from start station to itself is 0
         distance[startStationID] = 0.0
+
 
 
 

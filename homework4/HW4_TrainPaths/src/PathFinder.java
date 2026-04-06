@@ -176,11 +176,11 @@ public class PathFinder {
         //radius of earth in km
         double earthRadius = 6371;
 
-        // convert differences in latitude and longitude from degrees to radians
+        //convert differences in latitude and longitude from degrees to radians
         double dLat = Math.toRadians(latB - latA);
         double dLon = Math.toRadians(lonB - lonA);
 
-        // convert original latitudes from degrees to radians
+        //convert original latitudes from degrees to radians
         double lat1Rad = Math.toRadians(latA);
         double lat2Rad = Math.toRadians(latB);
         // apply Haversine formula
@@ -190,7 +190,7 @@ public class PathFinder {
 
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-        // distance = earth radius × central angle
+        //distance = earth radius × central angle
         return earthRadius * c;
     }
 
@@ -198,7 +198,7 @@ public class PathFinder {
      * Run A* algorithm to find shortest path from start station to target station
      * @param startStationID start station ID
      * @param targetStationID target station ID
-     * @return "NONE" if there are no valid paths or two-line string:
+     * @return "NONE" if there are no valid paths OR return two-line string:
      * line 1 = String of shortest path of stop_ids strung together by arrows
      * line 2 = total path distance rounded to 2 decimals
      */
@@ -210,7 +210,7 @@ public class PathFinder {
         //maps each station to previous station on the best known path
         HashMap<String, String> predecessor = new HashMap<>();
 
-        //initialize all stations with infinite distance/estimate and no predecessor
+        //initialize all stations with infinite distance and estimate and no predecessor
         for (String stationID : this.stations.keySet()) {
             distance.put(stationID, Double.POSITIVE_INFINITY);
             estimate.put(stationID, Double.POSITIVE_INFINITY);
