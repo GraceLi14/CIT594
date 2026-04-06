@@ -296,31 +296,31 @@ class PathFinder:
             #record best path to nodeVisited comes through nodeCurrent
             predecessor[nodeVisited] = nodeCurrent
 
-    if __name__ == "__main__":
-        # autograder expects exactly 5 arguments after the script name
-        if len(sys.argv) != 6:
-            print("NONE")
-            sys.exit()
+if __name__ == "__main__":
+    # autograder expects exactly 5 arguments after the script name
+    if len(sys.argv) != 6:
+        print("NONE")
+        sys.exit()
 
-        # read command-line arguments
-        nodesFile = sys.argv[1]
-        edgesFile = sys.argv[2]
-        command = sys.argv[3]
-        source_id = sys.argv[4]
-        target_id = sys.argv[5]
+    # read command-line arguments
+    nodesFile = sys.argv[1]
+    edgesFile = sys.argv[2]
+    command = sys.argv[3]
+    source_id = sys.argv[4]
+    target_id = sys.argv[5]
 
-        # only valid command for this assignment is "astar"
-        if command != "astar":
-            print("NONE")
-            sys.exit()
+    # only valid command for this assignment is "astar"
+    if command != "astar":
+        print("NONE")
+        sys.exit()
 
-        # build graph and run A* search
-        finder = PathFinder()
-        finder.loadStations(nodesFile)
-        finder.loadEdges(edgesFile)
+    # build graph and run A* search
+    finder = PathFinder()
+    finder.loadStations(nodesFile)
+    finder.loadEdges(edgesFile)
 
-        # print either the two-line result or NONE
-        print(finder.aStar(source_id, target_id))
+    # print either the two-line result or NONE
+    print(finder.aStar(source_id, target_id))
 
 
 
