@@ -19,5 +19,5 @@ GPT to help me understand how Java min-heap updates i.e. doesn't resort heap whe
 w3schools remind me of how to read files in Python
 
 4. Please write one or two sentences about something that you learned while completing this assignment.
-Not take pseudocode for face-value. 
+Not take pseudocode for face-value. Thinking about the edge cases and also how to incorporate existing programming structure to fit the pseudocode
 Figuring out how the different components fit into each other. For example, the pseudocode for A* algorithm has more parameters than what I needed to implement because I already had a lot of the parameters hidden as fields in my class.

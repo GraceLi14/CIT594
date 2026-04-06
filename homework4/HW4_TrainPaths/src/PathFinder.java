@@ -309,7 +309,7 @@ public class PathFinder {
                 //attempt to improve path to this neighbor
                 relaxAStar(currentStationID, neighborID, targetStationID, distance, estimate, predecessor);
 
-                //if neighbor's estimate improved, reinsert ot heap
+                //if neighbor's estimate improved, reinsert to heap
                 if(oldEstimate > estimate.get(neighborID)){
                     toVisit.offer(neighborID);
                 }

@@ -1,5 +1,6 @@
 import math
-
+import heapq
+import sys
 
 class PathFinder:
     #constructor
@@ -180,20 +181,93 @@ class PathFinder:
             return "NONE"
 
         #if start and target station are the same, print just the station with distance of 0
-        if(startStationID == targetStationID):
-            return startStationID + "\n 0.00"
+        if startStationID == targetStationID:
+            return startStationID + "\n0.00"
 
         #distance from start station to itself is 0
         distance[startStationID] = 0.0
 
-        #get both start and target station
+        #get both start and target station objects
         startStation = self.stations[startStationID]
         targetStation = self.stations[targetStationID]
 
+        #calculate heuristic from start station directly to target station
         haversineSourceTarget = self.haversine(startStation.lat, startStation.lon, targetStation.lat, targetStation.lon)
 
+        #set start station's estimated total cost
         estimate[startStationID] = haversineSourceTarget
+
+        #keep track of stations fully processed
         visited = set()
+
+        #min-heap ordered by smallest estimated total cost then alphabetical station ID
+        toVisit = []
+
+        #pushing each station total cost estimate and its respective station ID as value into the min-heap
+        #python compares tuples in order of first element (estimate) and then second element (alphabetical)
+        for stationID in estimate.keys():
+            heapq.heappush(toVisit, (estimate[stationID], stationID))
+
+        #continue until no stations to process
+        while toVisit:
+            #remove station with the smallest estimate
+            currentStationID = heapq.heappop(toVisit)[1]
+
+            #if station already visited/processed, skip
+            if (currentStationID in visited):
+                continue
+
+            #if best remaining estimate is infinity, no reachable path exists to target
+            if(estimate[currentStationID] == math.inf):
+                break
+
+            #if target is reached, stop search
+            if(currentStationID == targetStationID):
+                break
+
+            #mark current station as processed
+            visited.add(currentStationID)
+
+            #if current station has no neighbors, skip it
+            if(currentStationID not in self.graph):
+                continue
+
+            #get all neighboring stations to current station
+            neighbors = self.graph[currentStationID]
+            #iterate through all neighbors to try relaxing each one
+            for neighborID in neighbors.keys():
+                #if already visited/processed, skip
+                if neighborID in visited:
+                    continue
+
+                #store neighbor's old estimate so we can see if there's an improvement
+                oldEstimate = estimate[neighborID]
+
+                #attempt to improve path to neighbor
+                self.relaxAStar(currentStationID, neighborID, targetStationID, distance, estimate, predecessor)
+
+                #if neighbor estimate improved, add back into heap
+                if(estimate[neighborID] < oldEstimate):
+                    heapq.heappush(toVisit,(estimate[neighborID], neighborID))
+
+        #if target has no predecessor, no path from start to target was found so print "NONE"
+        if predecessor.get(targetStationID) is None:
+            return "NONE"
+
+        #set currentNode as target station
+        currentNode = targetStationID
+        #set pathToTarget as list
+        pathToTarget = []
+
+        #reconstruct path backward from target
+        while currentNode is not None:
+            pathToTarget.insert(0,currentNode)
+            currentNode = predecessor[currentNode]
+
+        #join list together with -> and convert to String
+        pathString = "->".join(pathToTarget)
+        #return string of path and distance in km (2 decimal places)
+        return pathString + "\n" + format(distance[targetStationID], ".2f")
 
     def relaxAStar(self, nodeCurrent, nodeVisited, targetStationID, distance, estimate, predecessor):
         '''
@@ -221,6 +295,32 @@ class PathFinder:
             estimate[nodeVisited] = distance[nodeVisited] + self.haversine(visitedStation.lat, visitedStation.lon, targetStation.lat, targetStation.lon)
             #record best path to nodeVisited comes through nodeCurrent
             predecessor[nodeVisited] = nodeCurrent
+
+    if __name__ == "__main__":
+        # autograder expects exactly 5 arguments after the script name
+        if len(sys.argv) != 6:
+            print("NONE")
+            sys.exit()
+
+        # read command-line arguments
+        nodesFile = sys.argv[1]
+        edgesFile = sys.argv[2]
+        command = sys.argv[3]
+        source_id = sys.argv[4]
+        target_id = sys.argv[5]
+
+        # only valid command for this assignment is "astar"
+        if command != "astar":
+            print("NONE")
+            sys.exit()
+
+        # build graph and run A* search
+        finder = PathFinder()
+        finder.loadStations(nodesFile)
+        finder.loadEdges(edgesFile)
+
+        # print either the two-line result or NONE
+        print(finder.aStar(source_id, target_id))
 
 
 
