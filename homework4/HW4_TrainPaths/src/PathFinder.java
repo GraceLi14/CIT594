@@ -149,6 +149,7 @@ public class PathFinder {
                         }
                     }
                 }
+                //read next line
                 line = br.readLine();
             }
             br.close();
@@ -242,10 +243,10 @@ public class PathFinder {
 
         //set the start station's estimated total cost
         estimate.put(startStationID, haversineSourceTarget);
-        //keep track of stations fully prcoessed
+        //keep track of stations fully processed
         Set<String> visited = new HashSet<>();
 
-        //min-heap ordered by smallest estimated total cost, then alphbetical station ID
+        //min-heap ordered by smallest estimated total cost, then alphabetical station ID
         PriorityQueue<String> toVisit = new PriorityQueue<>(
                 //if station a has smaller estimate, it should come first
                 (a,b) -> {
