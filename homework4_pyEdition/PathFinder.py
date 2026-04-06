@@ -321,11 +321,3 @@ if __name__ == "__main__":
 
     # print either the two-line result or NONE
     print(finder.aStar(source_id, target_id))
-
-
-
-
-
-
-
-

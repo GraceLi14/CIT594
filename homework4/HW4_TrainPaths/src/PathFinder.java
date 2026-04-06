@@ -311,6 +311,9 @@ public class PathFinder {
 
                 //if neighbor's estimate improved, reinsert to heap
                 if(oldEstimate > estimate.get(neighborID)){
+                    //remove old neighborID
+                    toVisit.remove(neighborID);
+                    //add new one
                     toVisit.offer(neighborID);
                 }
             }

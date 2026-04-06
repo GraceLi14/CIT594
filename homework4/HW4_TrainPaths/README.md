@@ -3,9 +3,9 @@ Penn ID: 78851131
 
 Part 4 Analysis
 1. What is the purpose of RELAX-A-STAR described in the pseudo code for A* Search? 
-
+The purpose is to always find the most efficient path to the target.
 2. Why does A* require a priority queue (or min-heap)? What would happen if it used a regular queue instead? 
-
+If we used a regular queue, wouldn't use the minimum estimate or total cost
 3. When translating your solution from Java to Python, how did your chosen data structures change? Give a specific example of a data structure you used in Java and its equivalent in Python.
 
 Additional Questions
