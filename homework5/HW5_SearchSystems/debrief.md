@@ -30,5 +30,7 @@ The collectMatchingWords method scans the entire dataset again (n). Within that 
 As a result, the total work becomes n × m × n × m, leading to O(n²m²) time complexity.
 
 7. What is the time complexity of your fix? Respond in terms of n (number of words) and m (average item length in characters).
-I fixed the original code by replacing the prefix index to a compressedTrie and then DFS searching through this trie to return a list of words that have the relevant prefix.
-The time complexity of my compressedTrie
+The time complexity of building the compressed trie is approximately O(nm), where n is the number of words and m is the average word length. 
+Each word is inserted by comparing characters along trie paths, and in the worst case, the insertion work is proportional to the length of the word. 
+Autocomplete lookup is O(m + k), where m is the prefix length and k is the number of characters/words visited during DFS to collect matching completions.
+Overall, nm dominates so the overall time complexity is O(nm). This is much better than the original implementation because it avoids repeatedly scanning the entire dataset for every prefix.
