@@ -209,12 +209,13 @@ public class AutocompleteService {
                 //remove the characters that already matched
                 remainingPrefix = remainingPrefix.substring(child.label.length());
             }
+
             //if a portion of the child label is the prefix
             else if(child.label.startsWith(remainingPrefix)){
                 //update current node to dig deeper
                 currentNode = child;
-                //DFS search from the updated currentNode
-                findWordsDFS(currentNode, remainingPrefix, result);
+                //DFS search from the updated currentNode with the word param being the entire prefix currently + current node label
+                findWordsDFS(currentNode, prefix + currentNode.label.substring(remainingPrefix.length()), result);
                 //return the final results of this search
                 return result;
             }
