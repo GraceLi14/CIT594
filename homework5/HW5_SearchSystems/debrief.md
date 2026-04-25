@@ -1,4 +1,5 @@
-1. What was causing the issue? What part of the code was causing the problem? If relevant, include a method signature and the name of the file in which the problematic code was contained. 
+1. What was causing the issue? What part of the code was causing the problem? If relevant, include a method signature and the name of the file in which the problematic code was contained.
+
 2. Why was this part of the code causing this issue? Include a plain english explanation of what was happening. 
 3. Why does this problem only appear for some datasets? 
 4. How did you solve the issue? 
