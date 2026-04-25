@@ -1,7 +1,4 @@
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * AutocompleteService returns ranked word completions for a given prefix.
@@ -17,12 +14,14 @@ import java.util.List;
  */
 public class AutocompleteService {
 
-    private final HashMap<String, List<String>> prefixIndex;
+//    private final HashMap<String, List<String>> prefixIndex;
+
     private final MLModel mlModel;
+    private final TrieNode prefixTrie;
 
     public AutocompleteService(List<String> words) {
         this.mlModel = new MLModel();
-        this.prefixIndex = buildPrefixIndex(words);
+        this.prefixTrie = buildTrie(words);
     }
 
     /**
@@ -147,42 +146,76 @@ public class AutocompleteService {
         //iterate through each character of both words from beginning to common length end
         for(int i = 0; i < len; i++){
             //if each letter of both words' prefixes are matching, keep incrementing commonPrefix count
-            if(remainingWord.charAt(i) == label.charAt(i)){
-                commonPrefix ++;
+            if(remainingWord.charAt(i) != label.charAt(i)){
+                return i;
             }
         }
 
         //returns final common prefix length
-        return commonPrefix;
+        return len;
     }
 
     /**
-     * Pre-computes a map from every prefix to all words that start with it.
      *
-     * For example, given ["cat", "car", "dog"]:
-     *   "c"   -> ["cat", "car"]
-     *   "ca"  -> ["cat", "car"]
-     *   "cat" -> ["cat"]
-     *   "car" -> ["car"]
-     *   "d"   -> ["dog"]
-     *   "do"  -> ["dog"]
-     *   "dog" -> ["dog"]
-     *
-     * @param words the full word list to index
-     * @return a map from prefix strings to matching word lists
+     * @param prefix
+     * @return
      */
-    private HashMap<String, List<String>> buildPrefixIndex(List<String> words) {
-        HashMap<String, List<String>> index = new HashMap<>();
+    public ArrayList<String> checkPrefixInTrie(String prefix){
+        //list of words that complete the prefix given
+        ArrayList<String> result = new ArrayList<>();
+        //look for words within this trie
+        TrieNode currentNode = this.prefixTrie;
+        //letters to be removed after found node for it
+        String remainingPrefix = prefix;
 
-        for (String word : words) {
-            for (int end = 1; end <= word.length(); end++) {
-                String prefix = word.substring(0, end);
-                    //adds word/phrase to the values of the prefix immediately
-                    index.computeIfAbsent(prefix, k -> new ArrayList<>()).add(word);
+        while(!remainingPrefix.isEmpty()){
+            TrieNode child = currentNode.children.get(remainingPrefix.charAt(0));
+
+            if (child == null){
+                return result;
+            }
+
+            if(remainingPrefix.startsWith(child.label)){
+                currentNode = child;
+                remainingPrefix = remainingPrefix.substring(child.label.length());
+            }
+            else if(child.label.startsWith(remainingPrefix)){
+                currentNode = child;
+                findWordsDFS(currentNode, remainingPrefix, result);
+                return result;
+            }
+            else {
+                return result;
             }
         }
+        //try to find if a path in the trie exists that matches the prefix
 
-        return index;
+
+        findWordsDFS(currentNode,prefix,result);
+
+        return result;
+    }
+
+    /**
+     * Helper function.
+     * @param currentNode
+     * @param word
+     * @param result
+     * @return
+     */
+    public ArrayList<String> findWordsDFS(TrieNode currentNode, String word, ArrayList<String> result){
+
+
+        //word is complete but there may be additional nodes below it that make additional words
+        if(currentNode.isTerminal){
+            result.add(word);
+        }
+
+        for(char child : currentNode.children.keySet()){
+            findWordsDFS(currentNode.children.get(child), word + currentNode.children.get(child).label, result);
+        }
+
+        return result;
     }
 
 
@@ -195,7 +228,7 @@ public class AutocompleteService {
      * @return ordered list of completions
      */
     public List<String> finish(String prefix, int maxResults) {
-        List<String> completions = prefixIndex.getOrDefault(prefix, new ArrayList<>());
+        List<String> completions = checkPrefixInTrie(prefix);
         List<String> ranked = order(prefix, completions);
         return ranked.subList(0, Math.min(maxResults, ranked.size()));
     }
@@ -217,7 +250,7 @@ public class AutocompleteService {
      * 
      * It simply returns the prefix index
      */
-    public HashMap<String, List<String>> getPrefixIndex() {
-        return prefixIndex;
+    public TrieNode getTrie() {
+        return this.prefixTrie;
     }
 }
